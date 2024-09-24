@@ -1,0 +1,47 @@
+
+  Id     Duration CommandLine
+  --     -------- -----------
+  29        2.112 dotnet new webapp
+  30        1.510 code-insiders.cmd
+  31        1.335 code-insiders.cmd .
+  32        2.341 dotnet publish -o out -c Release
+  33        0.063 ls .\out\
+  34        0.045 explorer .
+  35        2.639 az webapp deploy -n demo68365 -g demo68365
+  36        2.504 az webapp deploy -n demo68365 -g demo68365 --src-path .\out\Demo68365.zip
+  37       16.874 az login
+  38       18.923 az webapp deploy -n demo68365 -g demo68365 --src-path .\out\Demo68365.zip
+  39        0.020 cls
+  40        0.105 git status
+  41        0.030 ls -h
+  42        0.113 git log
+  43        0.171 git init
+  44        0.076 git status
+  45        0.110 git commit -m 'Initial commit'
+  46        0.440 dotnet new gitignore
+  47        0.067 git status
+  48        0.071 git status
+  49        0.072 git commit -m 'Initial commit'
+  50        0.504 git add *
+  51        0.092 git status
+  52        0.088 git checkout -b main
+  53        0.097 git status
+  54        0.210 git commit -m 'Initial commit'
+  55        0.063 git status
+  56        0.062 git status
+  57        0.092 git commit -m 'Added h2 message in Index.cshtml'
+  58        0.089 git add 
+  59        0.070 git add *
+  60        0.096 git commit -m 'Added h2 message in Index.cshtml'
+  61        0.055 git status
+  62        0.188 git log
+  63        0.104 git remote add origin https://github.com/jfbilodeau/Demo68365.git
+  64        2.801 git push -u origin main
+  65        0.104 git branch -b feature1
+  66        0.093 git branch -M feature1
+  67        0.061 git status
+  68        0.136 git log
+  69        0.166 git checkout main
+  70        1.153 git push -u origin main
+  71        1.682 git push -u origin feature1
+
