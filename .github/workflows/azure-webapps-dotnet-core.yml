@@ -31,5 +31,11 @@ jobs:
     - name: Test
       run: dotnet test --no-restore --verbosity normal # Run the tests with normal verbosity
 
+    - name: Azure Login
+      uses: Azure/login@v2.2.0
+      with:
+        creds: { ... }
+          
+
     - name: Create image
       run: az acr build -r demo68365 --image demo-webapp-68365:v1 .
