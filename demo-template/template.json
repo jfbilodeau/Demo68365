@@ -1,0 +1,414 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "sites_demo68365_name": {
+            "defaultValue": "demo68365",
+            "type": "String"
+        },
+        "serverfarms_demo68365_asp_name": {
+            "defaultValue": "demo68365-asp",
+            "type": "String"
+        },
+        "registries_demo68365_name": {
+            "defaultValue": "demo68365",
+            "type": "String"
+        },
+        "containerGroups_demo68365_name": {
+            "defaultValue": "demo68365",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.ContainerInstance/containerGroups",
+            "apiVersion": "2024-05-01-preview",
+            "name": "[parameters('containerGroups_demo68365_name')]",
+            "location": "canadacentral",
+            "properties": {
+                "sku": "Standard",
+                "containers": [
+                    {
+                        "name": "[parameters('containerGroups_demo68365_name')]",
+                        "properties": {
+                            "image": "[concat(parameters('containerGroups_demo68365_name'), '.azurecr.io/demo-webapp-68365:v1')]",
+                            "ports": [
+                                {
+                                    "protocol": "TCP",
+                                    "port": 80
+                                },
+                                {
+                                    "protocol": "TCP",
+                                    "port": 8080
+                                }
+                            ],
+                            "environmentVariables": [],
+                            "configMap": {
+                                "keyValuePairs": {}
+                            },
+                            "resources": {
+                                "requests": {
+                                    "memoryInGB": 1.5,
+                                    "cpu": 1
+                                }
+                            }
+                        }
+                    }
+                ],
+                "initContainers": [],
+                "imageRegistryCredentials": [
+                    {
+                        "server": "[concat(parameters('containerGroups_demo68365_name'), '.azurecr.io')]",
+                        "username": "[parameters('containerGroups_demo68365_name')]"
+                    }
+                ],
+                "restartPolicy": "OnFailure",
+                "osType": "Linux"
+            }
+        },
+        {
+            "type": "Microsoft.ContainerRegistry/registries",
+            "apiVersion": "2023-11-01-preview",
+            "name": "[parameters('registries_demo68365_name')]",
+            "location": "canadacentral",
+            "sku": {
+                "name": "Basic",
+                "tier": "Basic"
+            },
+            "properties": {
+                "adminUserEnabled": true,
+                "policies": {
+                    "quarantinePolicy": {
+                        "status": "disabled"
+                    },
+                    "trustPolicy": {
+                        "type": "Notary",
+                        "status": "disabled"
+                    },
+                    "retentionPolicy": {
+                        "days": 7,
+                        "status": "disabled"
+                    },
+                    "exportPolicy": {
+                        "status": "enabled"
+                    },
+                    "azureADAuthenticationAsArmPolicy": {
+                        "status": "enabled"
+                    },
+                    "softDeletePolicy": {
+                        "retentionDays": 7,
+                        "status": "disabled"
+                    }
+                },
+                "encryption": {
+                    "status": "disabled"
+                },
+                "dataEndpointEnabled": false,
+                "publicNetworkAccess": "Enabled",
+                "networkRuleBypassOptions": "AzureServices",
+                "zoneRedundancy": "Disabled",
+                "anonymousPullEnabled": false,
+                "metadataSearch": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2023-12-01",
+            "name": "[parameters('serverfarms_demo68365_asp_name')]",
+            "location": "Canada Central",
+            "sku": {
+                "name": "P0v3",
+                "tier": "Premium0V3",
+                "size": "P0v3",
+                "family": "Pv3",
+                "capacity": 1
+            },
+            "kind": "linux",
+            "properties": {
+                "perSiteScaling": false,
+                "elasticScaleEnabled": false,
+                "maximumElasticWorkerCount": 1,
+                "isSpot": false,
+                "reserved": true,
+                "isXenon": false,
+                "hyperV": false,
+                "targetWorkerCount": 0,
+                "targetWorkerSizeId": 0,
+                "zoneRedundant": false
+            }
+        },
+        {
+            "type": "Microsoft.ContainerRegistry/registries/scopeMaps",
+            "apiVersion": "2023-11-01-preview",
+            "name": "[concat(parameters('registries_demo68365_name'), '/_repositories_admin')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ContainerRegistry/registries', parameters('registries_demo68365_name'))]"
+            ],
+            "properties": {
+                "description": "Can perform all read, write and delete operations on the registry",
+                "actions": [
+                    "repositories/*/metadata/read",
+                    "repositories/*/metadata/write",
+                    "repositories/*/content/read",
+                    "repositories/*/content/write",
+                    "repositories/*/content/delete"
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.ContainerRegistry/registries/scopeMaps",
+            "apiVersion": "2023-11-01-preview",
+            "name": "[concat(parameters('registries_demo68365_name'), '/_repositories_pull')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ContainerRegistry/registries', parameters('registries_demo68365_name'))]"
+            ],
+            "properties": {
+                "description": "Can pull any repository of the registry",
+                "actions": [
+                    "repositories/*/content/read"
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.ContainerRegistry/registries/scopeMaps",
+            "apiVersion": "2023-11-01-preview",
+            "name": "[concat(parameters('registries_demo68365_name'), '/_repositories_pull_metadata_read')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ContainerRegistry/registries', parameters('registries_demo68365_name'))]"
+            ],
+            "properties": {
+                "description": "Can perform all read operations on the registry",
+                "actions": [
+                    "repositories/*/content/read",
+                    "repositories/*/metadata/read"
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.ContainerRegistry/registries/scopeMaps",
+            "apiVersion": "2023-11-01-preview",
+            "name": "[concat(parameters('registries_demo68365_name'), '/_repositories_push')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ContainerRegistry/registries', parameters('registries_demo68365_name'))]"
+            ],
+            "properties": {
+                "description": "Can push to any repository of the registry",
+                "actions": [
+                    "repositories/*/content/read",
+                    "repositories/*/content/write"
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.ContainerRegistry/registries/scopeMaps",
+            "apiVersion": "2023-11-01-preview",
+            "name": "[concat(parameters('registries_demo68365_name'), '/_repositories_push_metadata_write')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ContainerRegistry/registries', parameters('registries_demo68365_name'))]"
+            ],
+            "properties": {
+                "description": "Can perform all read and write operations on the registry",
+                "actions": [
+                    "repositories/*/metadata/read",
+                    "repositories/*/metadata/write",
+                    "repositories/*/content/read",
+                    "repositories/*/content/write"
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2023-12-01",
+            "name": "[parameters('sites_demo68365_name')]",
+            "location": "Canada Central",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_demo68365_asp_name'))]"
+            ],
+            "kind": "app,linux",
+            "properties": {
+                "enabled": true,
+                "hostNameSslStates": [
+                    {
+                        "name": "[concat(parameters('sites_demo68365_name'), '.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Standard"
+                    },
+                    {
+                        "name": "[concat(parameters('sites_demo68365_name'), '.scm.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Repository"
+                    }
+                ],
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_demo68365_asp_name'))]",
+                "reserved": true,
+                "isXenon": false,
+                "hyperV": false,
+                "dnsConfiguration": {},
+                "vnetRouteAllEnabled": false,
+                "vnetImagePullEnabled": false,
+                "vnetContentShareEnabled": false,
+                "siteConfig": {
+                    "numberOfWorkers": 1,
+                    "linuxFxVersion": "DOTNETCORE|8.0",
+                    "acrUseManagedIdentityCreds": false,
+                    "alwaysOn": true,
+                    "http20Enabled": false,
+                    "functionAppScaleLimit": 0,
+                    "minimumElasticInstanceCount": 0
+                },
+                "scmSiteAlsoStopped": false,
+                "clientAffinityEnabled": false,
+                "clientCertEnabled": false,
+                "clientCertMode": "Required",
+                "hostNamesDisabled": false,
+                "vnetBackupRestoreEnabled": false,
+                "customDomainVerificationId": "8C28EE57703A4FE63D5969BAFE5F0EBEA0BA19E76422D978981B6BA1E5EDC60E",
+                "containerSize": 0,
+                "dailyMemoryTimeQuota": 0,
+                "httpsOnly": true,
+                "redundancyMode": "None",
+                "publicNetworkAccess": "Enabled",
+                "storageAccountRequired": false,
+                "keyVaultReferenceIdentity": "SystemAssigned"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies",
+            "apiVersion": "2023-12-01",
+            "name": "[concat(parameters('sites_demo68365_name'), '/ftp')]",
+            "location": "Canada Central",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_demo68365_name'))]"
+            ],
+            "properties": {
+                "allow": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies",
+            "apiVersion": "2023-12-01",
+            "name": "[concat(parameters('sites_demo68365_name'), '/scm')]",
+            "location": "Canada Central",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_demo68365_name'))]"
+            ],
+            "properties": {
+                "allow": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/config",
+            "apiVersion": "2023-12-01",
+            "name": "[concat(parameters('sites_demo68365_name'), '/web')]",
+            "location": "Canada Central",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_demo68365_name'))]"
+            ],
+            "properties": {
+                "numberOfWorkers": 1,
+                "defaultDocuments": [
+                    "Default.htm",
+                    "Default.html",
+                    "Default.asp",
+                    "index.htm",
+                    "index.html",
+                    "iisstart.htm",
+                    "default.aspx",
+                    "index.php",
+                    "hostingstart.html"
+                ],
+                "netFrameworkVersion": "v4.0",
+                "linuxFxVersion": "DOTNETCORE|8.0",
+                "requestTracingEnabled": false,
+                "remoteDebuggingEnabled": false,
+                "httpLoggingEnabled": false,
+                "acrUseManagedIdentityCreds": false,
+                "logsDirectorySizeLimit": 35,
+                "detailedErrorLoggingEnabled": false,
+                "publishingUsername": "REDACTED",
+                "scmType": "None",
+                "use32BitWorkerProcess": true,
+                "webSocketsEnabled": false,
+                "alwaysOn": true,
+                "managedPipelineMode": "Integrated",
+                "virtualApplications": [
+                    {
+                        "virtualPath": "/",
+                        "physicalPath": "site\\wwwroot",
+                        "preloadEnabled": true
+                    }
+                ],
+                "loadBalancing": "LeastRequests",
+                "experiments": {
+                    "rampUpRules": []
+                },
+                "autoHealEnabled": false,
+                "vnetRouteAllEnabled": false,
+                "vnetPrivatePortsCount": 0,
+                "publicNetworkAccess": "Enabled",
+                "localMySqlEnabled": false,
+                "ipSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 2147483647,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 2147483647,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictionsUseMain": false,
+                "http20Enabled": false,
+                "minTlsVersion": "1.2",
+                "scmMinTlsVersion": "1.2",
+                "ftpsState": "FtpsOnly",
+                "preWarmedInstanceCount": 0,
+                "elasticWebAppScaleLimit": 0,
+                "functionsRuntimeScaleMonitoringEnabled": false,
+                "minimumElasticInstanceCount": 0,
+                "azureStorageAccounts": {}
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/deployments",
+            "apiVersion": "2023-12-01",
+            "name": "[concat(parameters('sites_demo68365_name'), '/b8219230-551b-4230-a425-0a121803e9b2')]",
+            "location": "Canada Central",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_demo68365_name'))]"
+            ],
+            "properties": {
+                "status": 4,
+                "author_email": "N/A",
+                "author": "N/A",
+                "deployer": "OneDeploy",
+                "message": "OneDeploy",
+                "start_time": "2024-09-23T17:37:13.6189294Z",
+                "end_time": "2024-09-23T17:37:19.3595442Z",
+                "active": true
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/hostNameBindings",
+            "apiVersion": "2023-12-01",
+            "name": "[concat(parameters('sites_demo68365_name'), '/', parameters('sites_demo68365_name'), '.azurewebsites.net')]",
+            "location": "Canada Central",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_demo68365_name'))]"
+            ],
+            "properties": {
+                "siteName": "demo68365",
+                "hostNameType": "Verified"
+            }
+        }
+    ]
+}

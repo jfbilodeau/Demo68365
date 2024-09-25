@@ -1,0 +1,18 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "sites_demo68365_name": {
+            "value": null
+        },
+        "serverfarms_demo68365_asp_name": {
+            "value": null
+        },
+        "registries_demo68365_name": {
+            "value": null
+        },
+        "containerGroups_demo68365_name": {
+            "value": null
+        }
+    }
+}
