@@ -40,4 +40,7 @@ jobs:
       run: az acr build -r demo68365 --image demo-webapp-68365:v1 .
 
     - name: Deploy Bicep template in Dev
-      run: az deployment group create --name DeployToDevFromGitHub --resource-group Demo68365  --template-file .\bicep\template.bicep --parameters .\bicep\parameters-dev.json
+      run: az deployment group create --name DeployToDevFromGitHub --resource-group Demo68365  --template-file ./bicep/template.bicep --parameters ./bicep/parameters-dev.json
+
+    # - name: Deploy web app
+      
